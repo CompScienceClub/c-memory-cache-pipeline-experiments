@@ -1,0 +1,206 @@
+    Performance table for two processors
+================================================
+
+
+This is a table of performance in MFLOPS
+for the two listed processors.  The
+compiler was gcc for compiled code.  
+
+The i5 is running at 3.2GHz with 6M 12-way 
+L3 cache, 4 x 256K 8-way L2 cache, 
+4 x 32K 8-way L1 cache (each, for both 
+instruction and data); cache line is 64 
+bytes.  Raspberry Pi is running at 1.0GHz 
+with 256K 8-way shared L2 cache and 16K 
+4-way shared L1 cache; cache line is 
+16 bytes.
+
+Discrepencies you might note compared to 
+stats given for a particular processor 
+are due to these figures including the
+associated addressing and looping logic,
+and the fact that most real-world problems
+do not come close to the theoretical
+maximum execution rate due to memory 
+bandwidth limitations and pipelining 
+considerations.
+
+
+
+Test           4th gen i5       Raspberry Pi B2+
+------------------------------------------------
+------------------------------------------------
+
+
+cache_line_no_opt
+------------------------------------
+   1            386.1           29.9
+   2            388.5           27.9
+   4            379.4           24.8
+   8            281.8           23.6
+   16           149.4           16.9*
+   32            94.5*          15.9
+   64            87.3           13.8
+   128          102.1            6.2
+   256          102.9            6.0
+
+   * indicates the first argument where 
+     the cache line is exhausted.
+
+
+cache_line_opt (-O3 both, -msse2  on i5)
+------------------------------------
+   1           1779.2           95.3
+   2           1137.5           83.9
+   4            597.1           68.8
+   8            294.5           33.8
+   16           149.3           17.8*
+   32           115.5*          16.4
+   64           106.5           15.4
+   128          123.3            7.3
+   256          117.0            7.3
+
+   * indicates the first argument where 
+     the cache line is exhausted. i5 
+     shows better performance for lower
+     arguments due to the relative speed 
+     of the core being high compared to 
+     memory. Raspberry Pi has less speed
+     differential and does not exhibit this.
+     Not sure why the Raspberry Pi drops
+     to 7.3 for higher arguments.
+
+
+cache_size (-O3 both, -msse2 on i5)
+------------------------------------
+   256          966.2           79.0
+   512         1114.8           80.9
+   1024        1121.6           81.8
+   2048        1124.9           81.8
+   4096        1126.5           79.9
+   8192        1127.2           35.5*
+   16384        532.9*          30.4
+   32768        532.5           22.8
+   65536        491.3           22.8*
+   131072       379.9           18.1
+   262144       370.0           13.3
+   524288       365.8           13.4
+   1048576      354.6           13.5
+   2097152      199.8           13.7
+   4194304      135.2*          13.8
+   8388608      112.2           13.6
+   16777216     104.3           13.6
+   33554432     102.3           13.6
+
+   * indicates transition from L2 and L3 
+     dominated performance.  The last
+     figures (beyond L3) express system 
+     memory performance.
+
+
+pipeline_no_opt
+------------------------------------
+   One          615.6           35.8
+   Two          632.3           34.6
+   Four         663.6           33.7
+
+     In this example the (unoptimized)
+     execution shows consistent performance
+     related to poor pipelining.
+
+
+pipeline_opt (-O3 both, -msse2 on i5)
+------------------------------------
+   One         9198.8*         171.7
+   Two         3322.3          183.5
+   Four        3190.2          232.6
+
+   * indicates artificial improvement 
+     due to compiler optimization for 
+     the specific code used.  The 
+     Raspberry Pi shows an inverted 
+     speed performance due to relative
+     processor to memory speed compared
+     to the i5.
+
+
+pipeline2_no_opt
+------------------------------------
+   wxyz        1424.4           68.8
+   wyxz        1480.4           69.2
+   wy           751.9*          59.9*
+
+   * indicates loop unrolling performance
+     impact.  There is no indication
+     that either processor suffer from
+     poor pipelining for this simple 
+     example.
+
+
+pipeline2_opt (-O3 both, -msse2 on i5)
+------------------------------------
+   wxyz        3383.8          678.0
+   wyxz        3385.7          714.3
+   wy          2256.9*         454.5*
+  
+   *  indicates loop unrolling performance
+      impact.  It is critical to unroll
+      loops for best performance, and is
+      not a default optimization.
+
+
+thread (-O3 both, -msse2 on i5)
+------------------------------------
+   Same         728.2*         235.3
+   Different   1052.0          210.5
+
+   * indicates threaded cache thrashing
+     on the i5.  The Raspberry Pi does
+     not suffer so badly due to main
+     memory being relatively fast 
+     compared to the core speed.
+
+
+ocaml_native
+------------------------------------
+                351.3           11.5
+
+     Performance using OCaml Array in
+     an imperative as possible manner.
+
+
+ocaml_no_opt
+------------------------------------
+                261.2            8.4
+
+     Similar implementation as above
+     in C using explicit deconstruction
+     and construction of OCaml types 
+     and single precision floats.  
+     Incurs Performance penalty from 
+     the cost of the conversions.
+
+
+ocaml_opt (-O3 both, -msse2 on i5)
+------------------------------------
+               2685.5          111.1
+
+     Use of OCaml Bigarray to pack single
+     precision floats so that we can 
+     do in-place arithmetic in C.
+
+
+ruby (interpretted example) 
+------------------------------------
+                 15.3            0.7
+
+php (interpretted example)
+------------------------------------
+                  7.2           0.01*
+
+   * illustrates that PHP for Raspberry
+     Pi must not be remotely optimized. 
+     In general, these are a great 
+     illustration of how interpretted 
+     languages are laughably inappropriate 
+     for numeric problems.
