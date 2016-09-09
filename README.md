@@ -1,4 +1,4 @@
-# __Instruction Pipelining and Pre-computation in Neural Networks __ 
+# __Instruction Pipelining and Pre-computation in Neural Networks__
 
 This is code accompanying a presentation for 
 Computer Science Club given Sept. 8, 2016. 
